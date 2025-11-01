@@ -5,7 +5,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import backendAPI from '../api/backend';
 import mysticSocialAPI from '../api/mysticsocial';
-import type { TrackedAccount, AccountWithStats, AccountCategory } from '../types/account';
+import type { AccountWithStats, AccountCategory } from '../types/account';
 
 export function useAccounts() {
   const [accounts, setAccounts] = useState<AccountWithStats[]>([]);
