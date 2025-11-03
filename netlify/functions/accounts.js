@@ -6,11 +6,6 @@
 
 import { getStore } from '@netlify/blobs';
 
-// Helper to get accounts store
-const getAccountsStore = () => {
-  return getStore('accounts');
-};
-
 export default async (req, context) => {
   // Set CORS headers
   const headers = {
@@ -26,7 +21,7 @@ export default async (req, context) => {
   }
 
   try {
-    const store = getAccountsStore();
+    const store = getStore({ name: 'accounts', context });
     const url = new URL(req.url);
     const path = url.pathname.replace('/.netlify/functions/accounts', '');
 
