@@ -21,7 +21,11 @@ export default async (req) => {
   }
 
   try {
-    const store = getStore('accounts');
+    // Get the store - Netlify automatically provides authentication in the runtime
+    const store = getStore({
+      name: 'accounts',
+      consistency: 'strong'
+    });
     const url = new URL(req.url);
 
     // GET - Fetch all accounts
