@@ -10,6 +10,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@netlify/blobs": "^10.3.1",
+    "@netlify/functions": "^5.0.1",
     "@vercel/kv": "^3.0.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
