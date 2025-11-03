@@ -82,7 +82,7 @@ export class BackendAPI {
    * Remove an account from tracking
    */
   async removeAccount(accountId: string): Promise<void> {
-    await this.request(`/api/accounts/${accountId}`, {
+    await this.request(`/api/accounts?id=${accountId}`, {
       method: 'DELETE',
     });
   }
