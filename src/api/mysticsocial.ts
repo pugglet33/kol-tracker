@@ -62,21 +62,20 @@ export interface PostsResponse {
 export class MysticSocialAPI {
   private baseURL: string;
   private timeout: number;
-  private useProxy: boolean;
+  private useBackend: boolean;
 
   constructor(baseURL: string = 'https://mysticsocial.xyz', timeout: number = 10000) {
     this.baseURL = baseURL;
     this.timeout = timeout;
-    // Use proxy in production (browser), direct API in development
-    this.useProxy = import.meta.env.PROD;
+    // Always use backend proxy for CORS-free requests
+    this.useBackend = true;
   }
 
   private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
-    // In production with proxy, endpoint is already a full path (starts with /api)
-    // In development, prepend baseURL
-    const url = endpoint.startsWith('/api/mysticsocial')
-      ? endpoint // Proxy endpoint - use as-is
-      : `${this.baseURL}${endpoint}`; // Direct API - prepend baseURL
+    // Use backend proxy for MysticSocial API calls
+    const url = endpoint.startsWith('/api/')
+      ? endpoint // Backend endpoint - use as-is
+      : `${this.baseURL}${endpoint}`; // Direct API - prepend baseURL (not used anymore)
 
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), this.timeout);
@@ -123,14 +122,9 @@ export class MysticSocialAPI {
       ...(weekly && { weekly: 'true' }),
     });
 
-    // Use proxy in production to avoid CORS issues
-    if (this.useProxy) {
-      // Call our Netlify proxy function
-      return this.request<MysticSocialResponse>(`/api/mysticsocial/mana?${params}`);
-    }
-
-    // Direct API call in development
-    return this.request<MysticSocialResponse>(`/api/mana?${params}`);
+    // Always use backend server proxy to avoid CORS issues
+    // Backend server at http://155.138.165.12 proxies to mysticsocial.xyz
+    return this.request<MysticSocialResponse>(`/api/mysticsocial/mana?${params}`);
   }
 
   /**
