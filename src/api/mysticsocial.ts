@@ -2,6 +2,7 @@
  * MysticSocial API Client
  *
  * Fetches real user engagement data and leaderboard stats from mysticsocial.xyz
+ * Uses a proxy to avoid CORS issues
  */
 
 export interface MysticSocialUser {
@@ -62,14 +63,16 @@ export interface PostsResponse {
 export class MysticSocialAPI {
   private baseURL: string;
   private timeout: number;
+  private useProxy: boolean;
 
   constructor(baseURL: string = 'https://mysticsocial.xyz', timeout: number = 10000) {
     this.baseURL = baseURL;
     this.timeout = timeout;
+    // Use proxy in production to avoid CORS issues
+    this.useProxy = window.location.hostname !== 'localhost';
   }
 
-  private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
-    const url = `${this.baseURL}${endpoint}`;
+  private async request<T>(url: string, options: RequestInit = {}): Promise<T> {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), this.timeout);
 
@@ -115,7 +118,16 @@ export class MysticSocialAPI {
       ...(weekly && { weekly: 'true' }),
     });
 
-    return this.request<MysticSocialResponse>(`/api/mana?${params}`);
+    // Use proxy in production to avoid CORS issues
+    const endpoint = this.useProxy
+      ? `/api/mystic-proxy?${params}`
+      : `/api/mana?${params}`;
+
+    const url = this.useProxy
+      ? endpoint  // Proxy is relative to current domain
+      : `${this.baseURL}${endpoint}`;
+
+    return this.request<MysticSocialResponse>(url);
   }
 
   /**
