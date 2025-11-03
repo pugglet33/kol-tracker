@@ -62,14 +62,22 @@ export interface PostsResponse {
 export class MysticSocialAPI {
   private baseURL: string;
   private timeout: number;
+  private useProxy: boolean;
 
   constructor(baseURL: string = 'https://mysticsocial.xyz', timeout: number = 10000) {
     this.baseURL = baseURL;
     this.timeout = timeout;
+    // Use proxy in production (browser), direct API in development
+    this.useProxy = import.meta.env.PROD;
   }
 
   private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
-    const url = `${this.baseURL}${endpoint}`;
+    // In production with proxy, endpoint is already a full path (starts with /api)
+    // In development, prepend baseURL
+    const url = endpoint.startsWith('/api/mysticsocial')
+      ? endpoint // Proxy endpoint - use as-is
+      : `${this.baseURL}${endpoint}`; // Direct API - prepend baseURL
+
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), this.timeout);
 
@@ -115,6 +123,13 @@ export class MysticSocialAPI {
       ...(weekly && { weekly: 'true' }),
     });
 
+    // Use proxy in production to avoid CORS issues
+    if (this.useProxy) {
+      // Call our Netlify proxy function
+      return this.request<MysticSocialResponse>(`/api/mysticsocial/mana?${params}`);
+    }
+
+    // Direct API call in development
     return this.request<MysticSocialResponse>(`/api/mana?${params}`);
   }
 
