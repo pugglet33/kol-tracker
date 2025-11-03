@@ -237,6 +237,7 @@ Then trigger a new deployment.
 2. ✅ **`.env.example`** - Improved documentation for environment variables
 3. ✅ **`src/api/mysticsocial.ts`** - Added proxy support for production + CORS fix
 4. ✅ **`netlify/functions/mysticsocial-proxy.js`** - Created new proxy function (NEW FILE)
+5. ✅ **`netlify/functions/accounts.js`** - Converted to CommonJS format to fix 500 errors
 
 ### Unchanged Files:
 The following were **verified to be correct** and not modified:
@@ -244,25 +245,26 @@ The following were **verified to be correct** and not modified:
 1. **`src/hooks/useAccounts.ts`** - Correctly calling the API methods
 2. **`src/components/Dashboard.tsx`** - No changes needed
 3. **`netlify.toml`** - Redirect configuration already correct
-4. **`netlify/functions/accounts.js`** - Serverless function working correctly
 
 ## Summary
 
 **What was broken:**
 1. Backend URL hardcoded to `localhost:3001` in production
 2. **CORS policy blocked browser requests to MysticSocial API**
+3. **Netlify functions using incorrect format (ES modules instead of CommonJS)**
 
 **What was fixed:**
 1. Config now auto-detects environment and uses appropriate backend URL
 2. Production uses same-origin requests that work with Netlify redirects
 3. **Created serverless proxy function to bypass CORS restrictions**
 4. **API client automatically uses proxy in production, direct calls in development**
+5. **Converted Netlify functions to standard CommonJS format (exports.handler)**
 
 **Result:**
 - ✅ App now works correctly on Netlify
 - ✅ User stats fetch properly from MysticSocial API (via proxy)
 - ✅ No CORS errors in production
-- ✅ Account management works through serverless functions
+- ✅ Account management works through serverless functions (no 500 errors)
 - ✅ Auto-refresh functionality works
 - ✅ Development mode still uses direct API calls (faster, easier debugging)
 

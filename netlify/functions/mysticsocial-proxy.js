@@ -4,7 +4,7 @@
  * Proxies requests to MysticSocial API to avoid CORS issues
  */
 
-export default async (req) => {
+exports.handler = async (event) => {
   const headers = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Methods': 'GET, OPTIONS',
@@ -13,18 +13,21 @@ export default async (req) => {
   };
 
   // Handle CORS preflight
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { status: 200, headers });
+  if (event.httpMethod === 'OPTIONS') {
+    return {
+      statusCode: 200,
+      headers,
+      body: ''
+    };
   }
 
   try {
-    const url = new URL(req.url);
-
     // Get query parameters
-    const page = url.searchParams.get('page') || '1';
-    const limit = url.searchParams.get('limit') || '50';
-    const search = url.searchParams.get('search') || '';
-    const weekly = url.searchParams.get('weekly') || 'false';
+    const params = event.queryStringParameters || {};
+    const page = params.page || '1';
+    const limit = params.limit || '50';
+    const search = params.search || '';
+    const weekly = params.weekly || 'false';
 
     // Build MysticSocial API URL
     const apiParams = new URLSearchParams({
@@ -52,23 +55,21 @@ export default async (req) => {
 
     const data = await response.json();
 
-    return new Response(JSON.stringify(data), {
-      status: 200,
-      headers
-    });
+    return {
+      statusCode: 200,
+      headers,
+      body: JSON.stringify(data)
+    };
 
   } catch (error) {
     console.error('[PROXY] Error fetching from MysticSocial API:', error);
-    return new Response(JSON.stringify({
-      success: false,
-      error: error.message,
-    }), {
-      status: 500,
-      headers
-    });
+    return {
+      statusCode: 500,
+      headers,
+      body: JSON.stringify({
+        success: false,
+        error: error.message,
+      })
+    };
   }
-};
-
-export const config = {
-  path: "/api/mysticsocial/mana"
 };
