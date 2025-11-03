@@ -6,7 +6,7 @@
 
 import { getStore } from '@netlify/blobs';
 
-export default async (req, context) => {
+export default async (req) => {
   // Set CORS headers
   const headers = {
     'Access-Control-Allow-Origin': '*',
@@ -21,9 +21,8 @@ export default async (req, context) => {
   }
 
   try {
-    const store = getStore({ name: 'accounts', context });
+    const store = getStore('accounts');
     const url = new URL(req.url);
-    const path = url.pathname.replace('/.netlify/functions/accounts', '');
 
     // GET - Fetch all accounts
     if (req.method === 'GET') {
