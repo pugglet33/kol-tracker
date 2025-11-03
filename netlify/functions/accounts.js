@@ -1,10 +1,12 @@
 /**
  * Netlify Function for Account Management
  *
- * Uses Netlify Blobs for simple key-value storage (no extra setup needed!)
+ * Simple in-memory storage (temporary until we set up proper database)
+ * NOTE: Data will reset on each deploy - use localStorage on client for persistence
  */
 
-import { getStore } from '@netlify/blobs';
+// Temporary in-memory storage
+let accounts = [];
 
 export default async (req) => {
   // Set CORS headers
@@ -21,18 +23,10 @@ export default async (req) => {
   }
 
   try {
-    // Get the store - Netlify automatically provides authentication in the runtime
-    const store = getStore({
-      name: 'accounts',
-      consistency: 'strong'
-    });
     const url = new URL(req.url);
 
     // GET - Fetch all accounts
     if (req.method === 'GET') {
-      const accountsJson = await store.get('accounts-list');
-      const accounts = accountsJson ? JSON.parse(accountsJson) : [];
-
       return new Response(JSON.stringify({
         success: true,
         accounts,
@@ -59,10 +53,6 @@ export default async (req) => {
         }), { status: 400, headers });
       }
 
-      // Get existing accounts
-      const accountsJson = await store.get('accounts-list');
-      const accounts = accountsJson ? JSON.parse(accountsJson) : [];
-
       // Check for duplicates
       const exists = accounts.find(
         acc => acc.username.toLowerCase() === username.toLowerCase() && acc.category === category
@@ -83,9 +73,8 @@ export default async (req) => {
         addedAt: new Date().toISOString(),
       };
 
-      // Add and save
+      // Add to storage
       accounts.push(newAccount);
-      await store.set('accounts-list', JSON.stringify(accounts));
 
       return new Response(JSON.stringify({
         success: true,
@@ -104,8 +93,6 @@ export default async (req) => {
         }), { status: 400, headers });
       }
 
-      const accountsJson = await store.get('accounts-list');
-      const accounts = accountsJson ? JSON.parse(accountsJson) : [];
       const index = accounts.findIndex(acc => acc.id === id);
 
       if (index === -1) {
@@ -116,7 +103,6 @@ export default async (req) => {
       }
 
       accounts.splice(index, 1);
-      await store.set('accounts-list', JSON.stringify(accounts));
 
       return new Response(JSON.stringify({
         success: true,
